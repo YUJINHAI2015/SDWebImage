@@ -51,12 +51,14 @@
 #define SDDispatchQueueSetterSementics assign
 #endif
 
+// 返回存储的图片，自动识别2x,3x，优先返回3x
 extern UIImage *SDScaledImageForKey(NSString *key, UIImage *image);
 
 typedef void(^SDWebImageNoParamsBlock)(void);
 
 extern NSString *const SDWebImageErrorDomain;
 
+// 同步回到主线程
 #define dispatch_main_sync_safe(block)\
     if ([NSThread isMainThread]) {\
         block();\
@@ -64,6 +66,7 @@ extern NSString *const SDWebImageErrorDomain;
         dispatch_sync(dispatch_get_main_queue(), block);\
     }
 
+// 异步回到主线程
 #define dispatch_main_async_safe(block)\
     if ([NSThread isMainThread]) {\
         block();\

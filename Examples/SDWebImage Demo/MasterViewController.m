@@ -9,15 +9,34 @@
 #import "MasterViewController.h"
 #import <SDWebImage/UIImageView+WebCache.h>
 #import "DetailViewController.h"
+#import "ConcurrencyOperation.h"
 
 @interface MasterViewController () {
     NSMutableArray *_objects;
 }
+
+@property (nonatomic, strong) NSLock *lock;
+@property (nonatomic, assign) NSInteger ticketCount;
+@property (nonatomic, strong) dispatch_semaphore_t dsema;
+@property (nonatomic, strong) ConcurrencyOperation *operation;
+
 @end
 
 @implementation MasterViewController
 
-@synthesize detailViewController = _detailViewController;
+- (void)viewDidLoad {
+    [super viewDidLoad];
+
+    
+    self.operation = [[ConcurrencyOperation alloc] init];
+    
+    [self.operation start];
+    
+    [self.operation addObserver:self forKeyPath:@"executing" options:NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew context:nil];
+}
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context {
+    NSLog(@"%@",object);
+}
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
@@ -36,15 +55,15 @@
         [SDWebImageManager sharedManager].imageDownloader.password = @"httpwatch01";
         
         _objects = [NSMutableArray arrayWithObjects:
-                    @"http://www.httpwatch.com/httpgallery/authentication/authenticatedimage/default.aspx?0.35786508303135633",     // requires HTTP auth, used to demo the NTLM auth
-                    @"http://assets.sbnation.com/assets/2512203/dogflops.gif",
-                    @"http://www.ioncannon.net/wp-content/uploads/2011/06/test2.webp",
+//                    @"http://www.httpwatch.com/httpgallery/authentication/authenticatedimage/default.aspx?0.35786508303135633",     // requires HTTP auth, used to demo the NTLM auth
+//                    @"http://assets.sbnation.com/assets/2512203/dogflops.gif",
+//                    @"http://www.ioncannon.net/wp-content/uploads/2011/06/test2.webp",
                     @"http://www.ioncannon.net/wp-content/uploads/2011/06/test9.webp",
                     nil];
 
-        for (int i=0; i<100; i++) {
-            [_objects addObject:[NSString stringWithFormat:@"https://s3.amazonaws.com/fast-image-cache/demo-images/FICDDemoImage%03d.jpg", i]];
-        }
+//        for (int i=0; i<100; i++) {
+//            [_objects addObject:[NSString stringWithFormat:@"https://s3.amazonaws.com/fast-image-cache/demo-images/FICDDemoImage%03d.jpg", i]];
+//        }
 
     }
     [SDWebImageManager.sharedManager.imageDownloader setValue:@"SDWebImage Demo" forHTTPHeaderField:@"AppName"];

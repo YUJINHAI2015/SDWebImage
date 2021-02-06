@@ -22,7 +22,7 @@ static char loadOperationKey;
     objc_setAssociatedObject(self, &loadOperationKey, operations, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     return operations;
 }
-
+// 为什么operation可以是数组
 - (void)sd_setImageLoadOperation:(id)operation forKey:(NSString *)key {
     [self sd_cancelImageLoadOperationWithKey:key];
     NSMutableDictionary *operationDictionary = [self operationDictionary];

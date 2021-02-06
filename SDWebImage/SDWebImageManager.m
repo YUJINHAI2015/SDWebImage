@@ -135,6 +135,7 @@
 
     BOOL isFailedUrl = NO;
     @synchronized (self.failedURLs) {
+        // 这是个不安全的操作
         isFailedUrl = [self.failedURLs containsObject:url];
     }
 
@@ -147,10 +148,11 @@
     }
 
     @synchronized (self.runningOperations) {
+        // 数组也是一个不安全的操作
         [self.runningOperations addObject:operation];
     }
     NSString *key = [self cacheKeyForURL:url];
-
+    // 缓存里面查找
     operation.cacheOperation = [self.imageCache queryDiskCacheForKey:key done:^(UIImage *image, SDImageCacheType cacheType) {
         if (operation.isCancelled) {
             @synchronized (self.runningOperations) {

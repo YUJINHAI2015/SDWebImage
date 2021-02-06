@@ -394,14 +394,14 @@ FOUNDATION_STATIC_INLINE NSUInteger SDCacheCostForImage(UIImage *image) {
         doneBlock(nil, SDImageCacheTypeNone);
         return nil;
     }
-
+    // 内存查找
     // First check the in-memory cache...
     UIImage *image = [self imageFromMemoryCacheForKey:key];
     if (image) {
         doneBlock(image, SDImageCacheTypeMemory);
         return nil;
     }
-
+    // 磁盘耗时查找
     NSOperation *operation = [NSOperation new];
     dispatch_async(self.ioQueue, ^{
         if (operation.isCancelled) {

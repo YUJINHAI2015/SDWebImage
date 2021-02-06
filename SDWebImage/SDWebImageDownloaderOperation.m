@@ -52,6 +52,7 @@ NSString *const SDWebImageDownloadFinishNotification = @"SDWebImageDownloadFinis
 @synthesize executing = _executing;
 @synthesize finished = _finished;
 
+#pragma mark - 初始化操作
 - (id)initWithRequest:(NSURLRequest *)request
               options:(SDWebImageDownloaderOptions)options
              progress:(SDWebImageDownloaderProgressBlock)progressBlock
@@ -88,6 +89,8 @@ NSString *const SDWebImageDownloadFinishNotification = @"SDWebImageDownloadFinis
     return self;
 }
 
+#pragma mark - 开始调用
+// 加入queue的option，系统会自动调用start方法
 - (void)start {
     @synchronized (self) {
         if (self.isCancelled) {
@@ -96,24 +99,6 @@ NSString *const SDWebImageDownloadFinishNotification = @"SDWebImageDownloadFinis
             return;
         }
 
-#if TARGET_OS_IPHONE && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_4_0
-        Class UIApplicationClass = NSClassFromString(@"UIApplication");
-        BOOL hasApplication = UIApplicationClass && [UIApplicationClass respondsToSelector:@selector(sharedApplication)];
-        if (hasApplication && [self shouldContinueWhenAppEntersBackground]) {
-            __weak __typeof__ (self) wself = self;
-            UIApplication * app = [UIApplicationClass performSelector:@selector(sharedApplication)];
-            self.backgroundTaskId = [app beginBackgroundTaskWithExpirationHandler:^{
-                __strong __typeof (wself) sself = wself;
-
-                if (sself) {
-                    [sself cancel];
-
-                    [app endBackgroundTask:sself.backgroundTaskId];
-                    sself.backgroundTaskId = UIBackgroundTaskInvalid;
-                }
-            }];
-        }
-#endif
         NSURLSession *session = self.unownedSession;
         if (!self.unownedSession) {
             NSURLSessionConfiguration *sessionConfig = [NSURLSessionConfiguration defaultSessionConfiguration];
@@ -151,17 +136,6 @@ NSString *const SDWebImageDownloadFinishNotification = @"SDWebImageDownloadFinis
         }
     }
 
-#if TARGET_OS_IPHONE && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_4_0
-    Class UIApplicationClass = NSClassFromString(@"UIApplication");
-    if(!UIApplicationClass || ![UIApplicationClass respondsToSelector:@selector(sharedApplication)]) {
-        return;
-    }
-    if (self.backgroundTaskId != UIBackgroundTaskInvalid) {
-        UIApplication * app = [UIApplication performSelector:@selector(sharedApplication)];
-        [app endBackgroundTask:self.backgroundTaskId];
-        self.backgroundTaskId = UIBackgroundTaskInvalid;
-    }
-#endif
 }
 
 - (void)cancel {
@@ -218,7 +192,7 @@ NSString *const SDWebImageDownloadFinishNotification = @"SDWebImageDownloadFinis
         self.ownedSession = nil;
     }
 }
-
+// 手动发送KVO到外面
 - (void)setFinished:(BOOL)finished {
     [self willChangeValueForKey:@"isFinished"];
     _finished = finished;

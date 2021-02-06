@@ -21,9 +21,10 @@ inline UIImage *SDScaledImageForKey(NSString *key, UIImage *image) {
         NSMutableArray *scaledImages = [NSMutableArray array];
 
         for (UIImage *tempImage in image.images) {
+            // 递归返回图片
             [scaledImages addObject:SDScaledImageForKey(key, tempImage)];
         }
-
+        // 多张图片组合在一起
         return [UIImage animatedImageWithImages:scaledImages duration:image.duration];
     }
     else {
